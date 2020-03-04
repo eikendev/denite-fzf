@@ -1,6 +1,6 @@
 import os
 
-from subprocess import Popen, PIPE
+from subprocess import Popen, DEVNULL, PIPE
 
 from denite.base.filter import Base
 from denite.util import error, convert2fuzzy_pattern
@@ -41,7 +41,12 @@ class Filter(Base):
         arg = [fzf, '+s', '-f', pattern]
 
         try:
-            p = Popen(arg, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+            p = Popen(
+                arg,
+                stdin=DEVNULL,
+                stdout=PIPE,
+                stderr=DEVNULL,
+            )
         except OSError as e:
             if e.errno == os.errno.ENOENT:
                 error(self.vim, 'matcher/fzf: ' + fzf + ' is not properly installed.')
@@ -49,9 +54,9 @@ class Filter(Base):
             else:
                 error(self.vim, 'matcher/fzf: cannot execute ' + fzf + '.')
 
-        (stdout, stderr) = p.communicate('\n'.join([d['word'] for d in candidates]).encode(encoding))
+        stdout, _ = p.communicate('\n'.join([d['word'] for d in candidates]).encode(encoding))
 
-        if stderr:
-            error(self.vim, 'matcher/fzf: ' + '\n'.join(stderr))
+        if p.returncode != 0:
+            error(self.vim, 'matcher/fzf: ' + fzf + ' exited with code ' + p.returncode + '.')
 
         return stdout.decode(encoding)
