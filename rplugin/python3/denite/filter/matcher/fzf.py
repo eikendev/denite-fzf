@@ -49,14 +49,21 @@ class Filter(Base):
             )
         except OSError as e:
             if e.errno == os.errno.ENOENT:
-                error(self.vim, 'matcher/fzf: ' + fzf + ' is not properly installed.')
+                message = f'{fzf} is not properly installed.'
+                self._throw_error(message)
                 self.__disabled = True
             else:
-                error(self.vim, 'matcher/fzf: cannot execute ' + fzf + '.')
+                message = f'{fzf} could not be executed.'
+                self._throw_error(message)
 
         stdout, _ = p.communicate('\n'.join([d['word'] for d in candidates]).encode(encoding))
 
         if p.returncode != 0:
-            error(self.vim, 'matcher/fzf: ' + fzf + ' exited with code ' + p.returncode + '.')
+            message = f'{fzf} exited with code {p.returncode}.'
+            self._throw_error(message)
 
         return stdout.decode(encoding)
+
+    def _throw_error(self, message):
+        message = f'{self.name}: {message}'
+        error(self.vim, message)
