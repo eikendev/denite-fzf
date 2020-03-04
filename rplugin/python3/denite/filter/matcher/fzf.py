@@ -58,7 +58,8 @@ class Filter(Base):
 
         stdout, _ = p.communicate('\n'.join([d['word'] for d in candidates]).encode(encoding))
 
-        if p.returncode != 0:
+        # If fzf does not find a match, it will return 1.
+        if p.returncode not in [0, 1]:
             message = f'{fzf} exited with code {p.returncode}.'
             self._throw_error(message)
 
