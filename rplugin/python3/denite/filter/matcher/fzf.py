@@ -43,7 +43,7 @@ class Filter(Base):
         try:
             p = Popen(
                 arg,
-                stdin=DEVNULL,
+                stdin=PIPE,
                 stdout=PIPE,
                 stderr=DEVNULL,
             )
